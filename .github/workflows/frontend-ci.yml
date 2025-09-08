@@ -69,6 +69,12 @@ jobs:
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "::set-output name=helm_version::${VERSION}"
 
+      - name: Login to AWS
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set ${{ secrets.AWS_REGION }}
+
       - name: Add Helm S3 Repo
         run: |
           ls -la
