@@ -65,8 +65,9 @@ jobs:
 
       - name: Init Helm S3 Repo
         run: |
+          helm s3 init s3://helmchartreporushikesh/stable/myapp
           ls -la
-          # helm s3 init s3://helmchartreporushikesh/stable/myapp
+          # 
 
       - name: Package Helm with version
         run: helm package ./authsys-frontend-chart --version ${{ steps.helm_version.outputs.helm_version }}
