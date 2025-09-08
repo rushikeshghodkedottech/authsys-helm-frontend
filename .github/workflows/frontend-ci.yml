@@ -86,7 +86,7 @@ jobs:
       - name: Push Helm Chart to S3
         run: |
           helm repo list
-          helm s3 push ./authsys-frontend-chart-${{ steps.helm_version.outputs.helm_version }}.tgz stable-authsys
+          helm s3 push ./authsys-frontend-chart.${{ steps.helm_version.outputs.helm_version }}.tgz stable-authsys
 
       - name: Search Helm Chart in S3 repo
         run: helm search repo stable-authsys
