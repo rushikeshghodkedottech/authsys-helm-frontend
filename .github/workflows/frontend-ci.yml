@@ -65,7 +65,7 @@ jobs:
       - name: Helm Chart Version Generation
         id: helm_version
         run: |
-          VERSION=$(date +'%Y.%m.%d')-${{ github.run_number }}
+          VERSION=$(date +'%Y.%m.%d').${{ github.run_number }}
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "::set-output name=helm_version::${VERSION}"
 
