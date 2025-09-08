@@ -54,7 +54,7 @@ jobs:
 
   #   steps:
       - name: Setup Helm
-        uses: azure/setup-helm@v1
+        uses: azure/setup-helm@v4
 
       - name: Install helm-s3 plugin
         run: |
