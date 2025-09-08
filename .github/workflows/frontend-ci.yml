@@ -56,6 +56,9 @@ jobs:
       - name: Setup Helm
         uses: azure/setup-helm@v1
 
+      - name: Install helm-s3 plugin
+        run: helm plugin install https://github.com/hypnoglow/helm-s3.git
+
       - name: Helm Chart Version Generation
         id: helm_version
         run: |
@@ -63,12 +66,11 @@ jobs:
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "::set-output name=helm_version::${VERSION}"
 
-      - name: Init Helm S3 Repo
+      - name: Add Helm S3 Repo
         run: |
-          helm s3 init s3://helmchartreporushikesh/stable/myapp
           ls -la
-          # 
-
+          helm repo add stable-authsys s3://helmchartreporushikesh/stable/myapp
+          
       - name: Package Helm with version
         run: helm package ./authsys-frontend-chart --version ${{ steps.helm_version.outputs.helm_version }}
 
