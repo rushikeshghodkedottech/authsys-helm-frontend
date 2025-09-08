@@ -17,36 +17,36 @@ jobs:
       image-tag: ${{ steps.meta.outputs.tags }}
       
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      # - name: Checkout code
+      #   uses: actions/checkout@v4
       
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v3
       
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+      # - name: Login to DockerHub
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ secrets.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
       
-      - name: Generate tags and labels
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value={{date 'YYYY.MM.DD'}}.${{ github.run_number }}
+      # - name: Generate tags and labels
+      #   id: meta
+      #   uses: docker/metadata-action@v5
+      #   with:
+      #     images: ${{ env.IMAGE_NAME }}
+      #     tags: |
+      #       type=raw,value={{date 'YYYY.MM.DD'}}.${{ github.run_number }}
       
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      # - name: Build and push
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: .
+      #     platforms: linux/amd64,linux/arm64
+      #     push: true
+      #     tags: ${{ steps.meta.outputs.tags }}
+      #     labels: ${{ steps.meta.outputs.labels }}
+      #     cache-from: type=gha
+      #     cache-to: type=gha,mode=max
 
   # push-on-s3-helm-repo:
   #   runs-on: ubuntu-latest
@@ -73,7 +73,9 @@ jobs:
         run: helm package ./authsys-frontend-chart --version ${{ steps.helm_version.outputs.helm_version }}
 
       - name: Push Helm Chart to S3
-        run: helm s3 push ./authsys-frontend-chart-${{ steps.helm_version.outputs.helm_version }}.tgz stable-authsys
+        run: |
+          helm repo list
+          helm s3 push ./authsys-frontend-chart-${{ steps.helm_version.outputs.helm_version }}.tgz stable-authsys
 
       - name: Search Helm Chart in S3 repo
         run: helm search repo stable-authsys
