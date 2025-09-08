@@ -1,0 +1,80 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: rushikeshghodkedottech/authsys-helm-deployment-frontend
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Generate tags and labels
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value={{date 'YYYY.MM.DD'}}.${{ github.run_number }}
+      
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  push-on-s3-helm-repo:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+      - name: Setup Helm
+        uses: azure/setup-helm@v1
+
+      - name: Helm Chart Version Generation
+        id: helm_version
+        run: |
+          VERSION=$(date +'%Y.%m.%d')-${{ github.run_number }}
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "::set-output name=helm_version::${VERSION}"
+
+      - name: Init Helm S3 Repo
+        run: |
+          helm s3 init s3://helmchartreporushikesh/stable/myapp
+
+      - name: Package Helm with version
+        run: helm package ./authsys-frontend-chart --version ${{ steps.helm_version.outputs.helm_version }}
+
+      - name: Push Helm Chart to S3
+        run: helm s3 push ./authsys-frontend-chart-${{ steps.helm_version.outputs.helm_version }}.tgz stable-authsys
+
+      - name: Search Helm Chart in S3 repo
+        run: helm search repo stable-authsys
+
+      - name: Update Helm Repo
+        run: helm repo update stable-authsys
