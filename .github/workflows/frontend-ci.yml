@@ -106,5 +106,6 @@ jobs:
   deploy:
     runs-on: self-hosted
     steps:
-      - name: Hello 
-        run: echo "Hello"
+      - name: Check Cluster Status 
+        run: |
+          minikube status
