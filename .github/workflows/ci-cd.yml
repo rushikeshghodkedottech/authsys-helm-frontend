@@ -136,6 +136,8 @@ jobs:
           CHART_NAME="authsys-frontend/authsys-frontend-chart"
           NAMESPACE="default"
           VERSION="${{ env.VERSION }}"
+
+          echo "VERSION"
   
           # Check if the release exists, then upgrade or install
           RELEASE_STATUS=$(helm status $RELEASE_NAME --namespace $NAMESPACE || echo "not_found")
