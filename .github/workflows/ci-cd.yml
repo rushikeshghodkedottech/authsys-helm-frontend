@@ -107,7 +107,8 @@ jobs:
     runs-on: self-hosted
     needs: build-and-push
     env: 
-      VERSION=${{ needs.build-and-push.outputs.helm-version }}
+      VERSION: ${{ needs.build-and-push.outputs.helm-version }}
+      
     steps:
       - name: Check Cluster Status 
         run: minikube status
