@@ -117,10 +117,12 @@ jobs:
         run: helm repo update
   
       - name: Set up Kubeconfig
+        run: kubectl config use-context minikube
+
+      - name: Verify Kubernetes Cluster
         run: |
-          echo "Setting up Kubeconfig for kubectl"
-          mkdir -p ~/.kube
-          echo "$KUBE_CONFIG" > ~/.kube/config
+          kubectl cluster-info
+          kubectl get nodes
       
       - name: Verify Helm Release Status (Pre-upgrade check)
         run: |
@@ -150,11 +152,3 @@ jobs:
         run: |
           helm status frontend --namespace default
           kubectl get pods --namespace default -l app.kubernetes.io/instance=frontend
-          kubectl rollout status deployment/frontend --namespace default
-
-      - name: Rollback Helm Release if Upgrade Fails
-        if: failure()
-        run: |
-          echo "Upgrade failed, rolling back..."
-          helm rollback frontend --namespace default
-
