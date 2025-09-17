@@ -106,6 +106,8 @@ jobs:
   deploy:
     runs-on: self-hosted
     needs: build-and-push
+    environment: 
+      VERSION=${{ needs.build-and-push.outputs.helm-version }}
     steps:
       - name: Check Cluster Status 
         run: minikube status
@@ -137,7 +139,7 @@ jobs:
           NAMESPACE="default"
           VERSION="${{ env.VERSION }}"
 
-          echo "VERSION"
+          echo "Installing/Upgrading chart version: $VERSION"
   
           # Check if the release exists, then upgrade or install
           RELEASE_STATUS=$(helm status $RELEASE_NAME --namespace $NAMESPACE || echo "not_found")
