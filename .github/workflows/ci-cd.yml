@@ -106,7 +106,7 @@ jobs:
   deploy:
     runs-on: self-hosted
     needs: build-and-push
-    environment: 
+    env: 
       VERSION=${{ needs.build-and-push.outputs.helm-version }}
     steps:
       - name: Check Cluster Status 
