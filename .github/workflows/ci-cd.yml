@@ -109,12 +109,52 @@ jobs:
     steps:
       - name: Check Cluster Status 
         run: minikube status
-        
+      
       - name: Check HELM Installation 
         run: helm version
-
-      - name: Check HELM Installation 
-        run: helm version
-
+  
       - name: Upgrade HELM repo
         run: helm repo update
+  
+      - name: Set up Kubeconfig
+        run: |
+          echo "Setting up Kubeconfig for kubectl"
+          mkdir -p ~/.kube
+          echo "$KUBE_CONFIG" > ~/.kube/config
+      
+      - name: Verify Helm Release Status (Pre-upgrade check)
+        run: |
+          echo "Checking the current Helm release status..."
+          helm status frontend --namespace default || echo "Release 'frontend' doesn't exist, proceeding with installation."
+  
+      - name: Upgrade Helm Chart
+        run: |
+          # Set variables
+          RELEASE_NAME="frontend"
+          CHART_NAME="authsys-frontend/authsys-frontend-chart"
+          NAMESPACE="default"
+          VERSION="${{ env.VERSION }}"
+  
+          # Check if the release exists, then upgrade or install
+          RELEASE_STATUS=$(helm status $RELEASE_NAME --namespace $NAMESPACE || echo "not_found")
+  
+          if [[ "$RELEASE_STATUS" == "not_found" ]]; then
+            echo "Release does not exist, installing..."
+            helm install $RELEASE_NAME $CHART_NAME --namespace $NAMESPACE --version $VERSION
+          else
+            echo "Release found, upgrading..."
+            helm upgrade $RELEASE_NAME $CHART_NAME --namespace $NAMESPACE --version $VERSION
+          fi
+  
+      - name: Verify Helm Release Deployment
+        run: |
+          helm status frontend --namespace default
+          kubectl get pods --namespace default -l app.kubernetes.io/instance=frontend
+          kubectl rollout status deployment/frontend --namespace default
+
+      - name: Rollback Helm Release if Upgrade Fails
+        if: failure()
+        run: |
+          echo "Upgrade failed, rolling back..."
+          helm rollback frontend --namespace default
+
